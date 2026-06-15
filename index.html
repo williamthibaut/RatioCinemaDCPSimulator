@@ -21,12 +21,20 @@
             background: rgba(17, 17, 17, 0.95);
             padding: 15px;
             display: flex;
-            justify-content: center;
-            gap: 25px;
+            flex-direction: column;
+            gap: 10px;
             align-items: center;
             z-index: 100;
             border-bottom: 2px solid #222;
             backdrop-filter: blur(10px);
+        }
+
+        .control-row {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            align-items: center;
+            width: 100%;
         }
 
         .control-group {
@@ -45,22 +53,21 @@
         }
 
         .btn-toggle {
-            padding: 8px 12px;
+            padding: 6px 12px;
             background: #222;
             color: #ccc;
             border: 1px solid #444;
             cursor: pointer;
             font-weight: bold;
-            font-size: 13px;
+            font-size: 12px;
             transition: all 0.2s;
         }
         .btn-toggle:hover { border-color: #666; color: #fff; }
         
-        /* Boutons Salles (Vert) */
+        /* Couleurs des boutons */
         .btn-room.active { background: #27ae60; color: white; border-color: #2ecc71; }
-        
-        /* Boutons DCP (Bleu) */
         .btn-dcp.active { background: #2980b9; color: white; border-color: #3498db; }
+        .btn-mask.active { background: #e67e22; color: white; border-color: #f39c12; }
 
         /* --- LE CONTENEUR MAÎTRE (RÉSOLUTION FIXE VIRTUELLE) --- */
         .simulator-viewport {
@@ -72,17 +79,13 @@
             background: #000;
         }
 
-        /* Ce bloc fait TOUJOURS un ratio 16:9 cinématographique dans lequel on travaille au pixel près */
         .cinema-wrapper {
             position: relative;
             width: 1920px;
             height: 1080px;
-            
-            /* TON IMAGE DE FOND (12.jpg) S'APPLIQUE ICI */
             background-image: url('12.jpg'); 
             background-size: cover;
             background-position: center;
-            
             transform-origin: center center;
             display: flex;
             align-items: center;
@@ -90,29 +93,29 @@
         }
 
         /* --- LA TOILE PHYSIQUE DE LA SALLE --- */
-        /* Elle est centrée automatiquement par-dessus la photo 12.jpg */
         .salle-physique-toile {
             position: absolute;
             
-            /* --- AJUSTEMENT DE LA POSITION DE L'ÉCRAN --- */
-            /* Si l'écran est trop haut ou trop bas par rapport à tes sièges, active et ajuste cette ligne (ex: top: 200px;) */
-            /* top: 250px; */ 
+            /* --- ON A RE-MONTÉ L'ÉCRAN ICI --- */
+            /* Précédemment centré automatiquement, on le force maintenant plus haut (150px du haut au lieu de ~250px) */
+            top: 150px; 
             
-            width: 1400px; /* Largeur max par défaut (Scope) */
-            height: 585px; /* Hauteur fixe de référence */
-            background: #111; /* Fond noir si pas de film */
+            width: 1400px; 
+            height: 585px; 
+            background: #111; 
             border: 6px solid #1a1a1a;
             box-shadow: 0 0 80px rgba(255, 255, 255, 0.15);
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.4s ease;
+            transition: width 0.4s ease, height 0.4s ease;
             overflow: hidden;
             z-index: 5;
         }
 
         /* --- LE CONTENEUR EASYDCP --- */
         .dcp-container {
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -121,7 +124,7 @@
             height: 100%;
             max-width: 100%;
             max-height: 100%;
-            transition: all 0.4s ease;
+            transition: width 0.4s ease, height 0.4s ease;
         }
 
         video {
@@ -130,28 +133,65 @@
             object-fit: contain;
         }
 
+        /* --- SYSTEME DE CACHES / MASQUES ROUGES TRANSPARENTS --- */
+        /* Ils se positionnent de manière absolue à l'intérieur du conteneur DCP */
+        .mask-overlay {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            background: rgba(230, 9, 20, 0.25); /* Rouge à 25% d'opacité pour que ce soit bien visible */
+            border-right: 2px dashed #ff4d4d;
+            border-left: 2px dashed #ff4d4d;
+            pointer-events: none; /* Laisse passer les clics sur le lecteur */
+            display: none; /* Caché par défaut */
+            z-index: 15;
+        }
+
+        /* Quand le cache 1.33 est actif, on applique ces dimensions */
+        /* En hauteur 100%, le format 1.33 (4:3) doit occuper une largeur égale à sa Hauteur x 1.333 */
+        .dcp-container.has-mask-133 .mask-overlay {
+            display: block;
+            /* On calcule la zone restante sur les côtés extérieurs */
+            /* En gros, on prend tout ce qui dépasse des 1.33 centraux */
+            width: calc((100% - (100vh * 0.541 * 1.333)) / 2); 
+        }
+        
+        .mask-left { left: 0; border-left: none; }
+        .mask-right { right: 0; border-right: none; }
+
+
         footer { background: #111; padding: 12px; text-align: center; font-size: 13px; z-index: 100; border-top: 1px solid #222; }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="control-group">
-            <span class="label-group">🏢 Écran Salle :</span>
-            <button class="btn-toggle btn-room" onclick="setRoom(1.85, this)">Salle 1.85 (Flat)</button>
-            <button class="btn-toggle btn-room" onclick="setRoom(1.90, this)">Salle 1.90 (Full)</button>
-            <button class="btn-toggle btn-room active" onclick="setRoom(2.39, this)">Salle 2.39 (Scope)</button>
+        <div class="control-row">
+            <div class="control-group">
+                <span class="label-group">🏢 Écran Salle :</span>
+                <button class="btn-toggle btn-room" onclick="setRoom(1.85, this)">Salle 1.85 (Flat)</button>
+                <button class="btn-toggle btn-room" onclick="setRoom(1.90, this)">Salle 1.90 (Full)</button>
+                <button class="btn-toggle btn-room active" onclick="setRoom(2.39, this)">Salle 2.39 (Scope)</button>
+            </div>
+
+            <div class="control-group">
+                <span class="label-group">💾 easyDCP 2K :</span>
+                <button class="btn-toggle btn-dcp" onclick="setDCP(1.85, this)">DCP Flat (1.85)</button>
+                <button class="btn-toggle btn-dcp" onclick="setDCP(1.90, this)">DCP Full (1.90)</button>
+                <button class="btn-toggle btn-dcp active" onclick="setDCP(2.39, this)">DCP Scope (2.39)</button>
+            </div>
         </div>
 
-        <div class="control-group">
-            <span class="label-group">💾 easyDCP 2K :</span>
-            <button class="btn-toggle btn-dcp" onclick="setDCP(1.85, this)">DCP Flat (1.85)</button>
-            <button class="btn-toggle btn-dcp" onclick="setDCP(1.90, this)">DCP Full (1.90)</button>
-            <button class="btn-toggle btn-dcp active" onclick="setDCP(2.39, this)">DCP Scope (2.39)</button>
-        </div>
+        <div class="control-row" style="margin-top: 5px;">
+            <div class="control-group">
+                <span class="label-group">🔍 Afficher Repère :</span>
+                <button class="btn-toggle btn-mask" onclick="toggleMask('1.33', this)">Cache Film 1.33 (4:3)</button>
+                <button class="btn-toggle btn-mask" onclick="toggleMask('none', this)">Désactiver les caches</button>
+            </div>
 
-        <input type="file" id="videoInput" accept="video/mp4,video/mov,video/mkv" style="display:none">
-        <button class="btn-toggle" style="background:#e50914; color:white; border-color:#b80710;" onclick="document.getElementById('videoInput').click()">📁 Charger Vidéo (MP4)</button>
+            <input type="file" id="videoInput" accept="video/mp4,video/mov,video/mkv" style="display:none">
+            <button class="btn-toggle" style="background:#e50914; color:white; border-color:#b80710; margin-left: 20px;" onclick="document.getElementById('videoInput').click()">📁 Charger Vidéo (MP4)</button>
+        </div>
     </header>
 
     <div class="simulator-viewport" id="viewport">
@@ -159,6 +199,10 @@
             
             <div class="salle-physique-toile" id="salleToile">
                 <div class="dcp-container" id="dcpContainer">
+                    
+                    <div class="mask-overlay mask-left" id="maskLeft"></div>
+                    <div class="mask-overlay mask-right" id="maskRight"></div>
+                    
                     <video id="videoPlayer" controls autoplay muted loop></video>
                 </div>
             </div>
@@ -167,7 +211,7 @@
     </div>
 
     <footer>
-        <p id="info">Système prêt. Arrière-plan "12.jpg" chargé. Écran virtuel synchronisé sur une grille 1920x1080.</p>
+        <p id="info">Système prêt. Écran rehaussé. Caches de vérification 1.33 disponibles.</p>
     </footer>
 
     <script>
@@ -177,11 +221,12 @@
         const dcpContainer = document.getElementById('dcpContainer');
         const videoInput = document.getElementById('videoInput');
         const videoPlayer = document.getElementById('videoPlayer');
+        const maskLeft = document.getElementById('maskLeft');
+        const maskRight = document.getElementById('maskRight');
 
         let roomRatio = 2.39;
         let dcpRatio = 2.39;
 
-        // Auto-scale adaptatif pour que l'image de fond (12.jpg) et l'écran ne bougent jamais de place, peu importe la taille du moniteur (1080p ou 4K)
         function resizeSimulator() {
             const viewWidth = viewport.clientWidth;
             const viewHeight = viewport.clientHeight;
@@ -194,10 +239,9 @@
         }
 
         function updateRatios() {
-            const heightRef = 585; // Hauteur fixe de l'écran
+            const heightRef = 585; 
             let currentToileWidth = 1400;
 
-            // 1. Déformation de l'écran de la salle
             if (roomRatio === 2.39) {
                 currentToileWidth = 1400;
             } else if (roomRatio === 1.90) {
@@ -209,7 +253,6 @@
             salleToile.style.width = `${currentToileWidth}px`;
             salleToile.style.height = `${heightRef}px`;
 
-            // 2. Ajustement du conteneur easyDCP
             if (dcpRatio <= roomRatio) {
                 const dcpWidth = heightRef * dcpRatio;
                 dcpContainer.style.width = `${dcpWidth}px`;
@@ -218,6 +261,42 @@
                 dcpContainer.style.width = `100%`;
                 const targetHeight = currentToileWidth / dcpRatio;
                 dcpContainer.style.height = `${targetHeight}px`;
+            }
+
+            // Recalcul de la taille des caches rouges selon le container actuel
+            updateMaskSizes(heightRef);
+        }
+
+        function toggleMask(type, btn) {
+            document.querySelectorAll('.btn-mask').forEach(b => b.classList.remove('active'));
+            
+            if (type === '1.33') {
+                btn.classList.add('active');
+                dcpContainer.classList.add('has-mask-133');
+            } else {
+                dcpContainer.classList.remove('has-mask-133');
+            }
+            updateRatios();
+        }
+
+        function updateMaskSizes(heightRef) {
+            // Largeur réelle du conteneur DCP actuel en pixels
+            const currentDCPWidth = dcpContainer.clientWidth;
+            
+            // Largeur idéale que devrait faire un film 1.33 (Hauteur fixe de 585px * 1.333)
+            const target133Width = heightRef * 1.3333;
+            
+            // On calcule la taille de chaque bande rouge (ce qui reste sur les côtés)
+            const sideWidth = (currentDCPWidth - target133Width) / 2;
+            
+            if (sideWidth > 0 && dcpContainer.classList.contains('has-mask-133')) {
+                maskLeft.style.display = 'block';
+                maskRight.style.display = 'block';
+                maskLeft.style.width = `${sideWidth}px`;
+                maskRight.style.width = `${sideWidth}px`;
+            } else {
+                maskLeft.style.display = 'none';
+                maskRight.style.display = 'none';
             }
         }
 
@@ -240,7 +319,11 @@
             if (file) videoPlayer.src = URL.createObjectURL(file);
         });
 
-        window.addEventListener('resize', resizeSimulator);
+        window.addEventListener('resize', () => {
+            resizeSimulator();
+            updateRatios();
+        });
+        
         resizeSimulator();
         updateRatios();
     </script>
