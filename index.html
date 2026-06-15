@@ -68,6 +68,21 @@
         .btn-dcp.active { background: #2980b9; color: white; border-color: #3498db; }
         .btn-mask.active { background: #e67e22; color: white; border-color: #f39c12; }
 
+        /* --- STYLE DU BANDEAU DES MÉTADONNÉES VIDÉO --- */
+        .video-meta-banner {
+            background: rgba(0, 0, 0, 0.75);
+            border: 1px solid #333;
+            padding: 6px 15px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: monospace;
+            display: flex;
+            gap: 20px;
+            color: #00ff66; /* Vert monitoring */
+            margin-left: 15px;
+        }
+        .meta-val { color: #fff; font-weight: bold; }
+
         .simulator-viewport {
             flex-grow: 1;
             display: flex;
@@ -121,10 +136,12 @@
             transition: width 0.4s ease, height 0.4s ease;
         }
 
+        /* --- SOLUTION POUR LES BANDES NOIRES INDÉSIRABLES --- */
         video {
             width: 100%;
             height: 100%;
-            object-fit: contain;
+            object-fit: cover; /* On passe en cover pour supprimer les fuites de pixels sur les côtés */
+            transform: scale(1.001); /* Micro-ajustement pour forcer l'ancrage parfait sans rogner */
             z-index: 1;
         }
 
@@ -179,6 +196,12 @@
 
             <input type="file" id="videoInput" accept="video/mp4,video/mov,video/mkv" style="display:none">
             <button class="btn-toggle" style="background:#e50914; color:white; border-color:#b80710; margin-left: 20px;" onclick="document.getElementById('videoInput').click()">📁 Charger Vidéo (MP4)</button>
+
+            <div class="video-meta-banner" id="metaBanner" style="display: none;">
+                <div>RES: <span class="meta-val" id="metaRes">-</span></div>
+                <div>RATIO: <span class="meta-val" id="metaRatio">-</span></div>
+                <div>FPS SOURCE: <span class="meta-val" id="metaFps">-</span></div>
+            </div>
         </div>
     </header>
 
@@ -199,7 +222,7 @@
     </div>
 
     <footer>
-        <p id="info">Système prêt. Ajustement des pixels de tolérance sur le format 1.78 appliqué.</p>
+        <p id="info">Système prêt. Suppression des espaces de Pillarbox parasites sur le lecteur vidéo effectuée.</p>
     </footer>
 
     <script>
@@ -212,9 +235,17 @@
         const maskLeft = document.getElementById('maskLeft');
         const maskRight = document.getElementById('maskRight');
 
+        const metaBanner = document.getElementById('metaBanner');
+        const metaRes = document.getElementById('metaRes');
+        const metaRatio = document.getElementById('metaRatio');
+        const metaFps = document.getElementById('metaFps');
+
         let roomRatio = 2.39;
         let dcpRatio = 2.39;
         let activeMaskRatio = 0; 
+
+        let frameCount = 0;
+        let fpsIntervalStartTime = 0;
 
         function resizeSimulator() {
             const viewWidth = viewport.clientWidth;
@@ -234,7 +265,7 @@
             if (roomRatio === 2.39) { currentToileWidth = 1400; } 
             else if (roomRatio === 1.90) { currentToileWidth = 1111; } 
             else if (roomRatio === 1.85) { currentToileWidth = 1082; }
-            else if (roomRatio === 1.78) { currentToileWidth = 1042; } // Ajusté de 1041 à 1042 pour l'intégration parfaite du lecteur
+            else if (roomRatio === 1.78) { currentToileWidth = 1042; } 
 
             salleToile.style.width = `${currentToileWidth}px`;
             salleToile.style.height = `${heightRef}px`;
@@ -254,7 +285,6 @@
                 currentDCPWidth = currentToileWidth;
             }
 
-            // Calcul des caches dynamiques
             if (activeMaskRatio > 0) {
                 const targetFilmWidth = currentDCPHeight * activeMaskRatio;
                 const sideWidth = (currentDCPWidth - targetFilmWidth) / 2;
@@ -273,6 +303,55 @@
                 maskRight.style.display = 'none';
             }
         }
+
+        // --- CALCUL DES PARAMÈTRES VIDÉO (RESOLUTION, RATIO, FPS) ---
+        videoPlayer.addEventListener('loadedmetadata', function() {
+            const w = videoPlayer.videoWidth;
+            const h = videoPlayer.videoHeight;
+            
+            const calculatedRatio = (w / h).toFixed(2);
+
+            metaRes.textContent = `${w}x${h}`;
+            metaRatio.textContent = `${calculatedRatio} (1:${calculatedRatio})`;
+            metaBanner.style.display = 'flex'; 
+            
+            frameCount = 0;
+            fpsIntervalStartTime = 0;
+            metaFps.textContent = "Calcul...";
+
+            if (videoPlayer.requestVideoFrameCallback) {
+                videoPlayer.requestVideoFrameCallback(monitorFps);
+            } else {
+                metaFps.textContent = "Non supporté";
+            }
+        });
+
+        function monitorFps(now, metadata) {
+            if (fpsIntervalStartTime === 0) {
+                fpsIntervalStartTime = now;
+            }
+            
+            frameCount++;
+            const elapsed = now - fpsIntervalStartTime;
+
+            if (elapsed >= 1000) {
+                const realFps = Math.round((frameCount * 1000) / elapsed);
+                metaFps.textContent = `${realFps} Img/s`;
+                
+                frameCount = 0;
+                fpsIntervalStartTime = now;
+            }
+
+            if (!videoPlayer.paused && !videoPlayer.ended) {
+                videoPlayer.requestVideoFrameCallback(monitorFps);
+            }
+        }
+
+        videoPlayer.addEventListener('play', function() {
+            if (videoPlayer.requestVideoFrameCallback) {
+                videoPlayer.requestVideoFrameCallback(monitorFps);
+            }
+        });
 
         function setActiveMask(ratio, btn) {
             document.querySelectorAll('.btn-mask').forEach(b => b.classList.remove('active'));
