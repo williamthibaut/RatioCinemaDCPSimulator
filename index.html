@@ -150,9 +150,8 @@
 
     <header>
         <div class="control-row">
-            <!-- La liste des formats d'écrans avec ton nouveau bouton Ratio 1.78 intégré -->
             <div class="control-group">
-                <span class="label-group">🏢 Ratio Écran Salle :</span>
+                <span class="label-group">🏢 Écran Salle :</span>
                 <button class="btn-toggle btn-room" onclick="setRoom(1.78, this)">Ratio 1.78</button>
                 <button class="btn-toggle btn-room" onclick="setRoom(1.85, this)">Salle 1.85 (Flat)</button>
                 <button class="btn-toggle btn-room" onclick="setRoom(1.90, this)">Salle 1.90 (Full)</button>
@@ -160,8 +159,7 @@
             </div>
 
             <div class="control-group">
-                <span class="label-group">💾 Container DCP :</span>
-                <button class="btn-toggle btn-dcp" onclick="setDCP(1.78, this)">Classic Screen (1.78)</button>
+                <span class="label-group">💾 easyDCP 2K :</span>
                 <button class="btn-toggle btn-dcp" onclick="setDCP(1.85, this)">DCP Flat (1.85)</button>
                 <button class="btn-toggle btn-dcp" onclick="setDCP(1.90, this)">DCP Full (1.90)</button>
                 <button class="btn-toggle btn-dcp active" onclick="setDCP(2.39, this)">DCP Scope (2.39)</button>
@@ -199,7 +197,7 @@
     </div>
 
     <footer>
-        <p id="info">Système prêt. Bouton Ratio 1.78 configuré à $1041\text{ px}$ de base matricielle.</p>
+        <p id="info">Système prêt. Ajustement des pixels de tolérance sur le format 1.78 appliqué.</p>
     </footer>
 
     <script>
@@ -231,11 +229,10 @@
             const heightRef = 585; 
             let currentToileWidth = 1400;
 
-            // Intégration mathématique du ratio 1.78 (585 * 1.7777 = 1041px)
             if (roomRatio === 2.39) { currentToileWidth = 1400; } 
             else if (roomRatio === 1.90) { currentToileWidth = 1111; } 
             else if (roomRatio === 1.85) { currentToileWidth = 1082; }
-            else if (roomRatio === 1.78) { currentToileWidth = 1041; }
+            else if (roomRatio === 1.78) { currentToileWidth = 1042; } // Ajusté de 1041 à 1042 pour l'intégration parfaite du lecteur
 
             salleToile.style.width = `${currentToileWidth}px`;
             salleToile.style.height = `${heightRef}px`;
