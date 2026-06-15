@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulateur easyDCP 2K - Salle de Cinéma</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #050505;
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background: rgba(17, 17, 17, 0.95);
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            align-items: center;
+            z-index: 100;
+            border-bottom: 2px solid #222;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .label-group {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .btn-toggle {
+            padding: 8px 12px;
+            background: #222;
+            color: #ccc;
+            border: 1px solid #444;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .btn-toggle:hover { border-color: #666; color: #fff; }
+        
+        /* Boutons Salles (Vert) */
+        .btn-room.active { background: #27ae60; color: white; border-color: #2ecc71; }
+        
+        /* Boutons DCP (Bleu) */
+        .btn-dcp.active { background: #2980b9; color: white; border-color: #3498db; }
+
+        /* --- LE CONTENEUR MAÎTRE (RÉSOLUTION FIXE VIRTUELLE) --- */
+        .simulator-viewport {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: #000;
+        }
+
+        /* Ce bloc fait TOUJOURS un ratio 16:9 cinématographique dans lequel on travaille au pixel près */
+        .cinema-wrapper {
+            position: relative;
+            width: 1920px;
+            height: 1080px;
+            
+            /* TON IMAGE DE FOND (12.jpg) S'APPLIQUE ICI */
+            background-image: url('12.jpg'); 
+            background-size: cover;
+            background-position: center;
+            
+            transform-origin: center center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- LA TOILE PHYSIQUE DE LA SALLE --- */
+        /* Elle est centrée automatiquement par-dessus la photo 12.jpg */
+        .salle-physique-toile {
+            position: absolute;
+            
+            /* --- AJUSTEMENT DE LA POSITION DE L'ÉCRAN --- */
+            /* Si l'écran est trop haut ou trop bas par rapport à tes sièges, active et ajuste cette ligne (ex: top: 200px;) */
+            /* top: 250px; */ 
+            
+            width: 1400px; /* Largeur max par défaut (Scope) */
+            height: 585px; /* Hauteur fixe de référence */
+            background: #111; /* Fond noir si pas de film */
+            border: 6px solid #1a1a1a;
+            box-shadow: 0 0 80px rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s ease;
+            overflow: hidden;
+            z-index: 5;
+        }
+
+        /* --- LE CONTENEUR EASYDCP --- */
+        .dcp-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            transition: all 0.4s ease;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        footer { background: #111; padding: 12px; text-align: center; font-size: 13px; z-index: 100; border-top: 1px solid #222; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="control-group">
+            <span class="label-group">🏢 Écran Salle :</span>
+            <button class="btn-toggle btn-room" onclick="setRoom(1.85, this)">Salle 1.85 (Flat)</button>
+            <button class="btn-toggle btn-room" onclick="setRoom(1.90, this)">Salle 1.90 (Full)</button>
+            <button class="btn-toggle btn-room active" onclick="setRoom(2.39, this)">Salle 2.39 (Scope)</button>
+        </div>
+
+        <div class="control-group">
+            <span class="label-group">💾 easyDCP 2K :</span>
+            <button class="btn-toggle btn-dcp" onclick="setDCP(1.85, this)">DCP Flat (1.85)</button>
+            <button class="btn-toggle btn-dcp" onclick="setDCP(1.90, this)">DCP Full (1.90)</button>
+            <button class="btn-toggle btn-dcp active" onclick="setDCP(2.39, this)">DCP Scope (2.39)</button>
+        </div>
+
+        <input type="file" id="videoInput" accept="video/mp4,video/mov,video/mkv" style="display:none">
+        <button class="btn-toggle" style="background:#e50914; color:white; border-color:#b80710;" onclick="document.getElementById('videoInput').click()">📁 Charger Vidéo (MP4)</button>
+    </header>
+
+    <div class="simulator-viewport" id="viewport">
+        <div class="cinema-wrapper" id="cinemaWrapper">
+            
+            <div class="salle-physique-toile" id="salleToile">
+                <div class="dcp-container" id="dcpContainer">
+                    <video id="videoPlayer" controls autoplay muted loop></video>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p id="info">Système prêt. Arrière-plan "12.jpg" chargé. Écran virtuel synchronisé sur une grille 1920x1080.</p>
+    </footer>
+
+    <script>
+        const wrapper = document.getElementById('cinemaWrapper');
+        const viewport = document.getElementById('viewport');
+        const salleToile = document.getElementById('salleToile');
+        const dcpContainer = document.getElementById('dcpContainer');
+        const videoInput = document.getElementById('videoInput');
+        const videoPlayer = document.getElementById('videoPlayer');
+
+        let roomRatio = 2.39;
+        let dcpRatio = 2.39;
+
+        // Auto-scale adaptatif pour que l'image de fond (12.jpg) et l'écran ne bougent jamais de place, peu importe la taille du moniteur (1080p ou 4K)
+        function resizeSimulator() {
+            const viewWidth = viewport.clientWidth;
+            const viewHeight = viewport.clientHeight;
+            
+            const scaleX = viewWidth / 1920;
+            const scaleY = viewHeight / 1080;
+            const scale = Math.min(scaleX, scaleY);
+
+            wrapper.style.transform = `scale(${scale})`;
+        }
+
+        function updateRatios() {
+            const heightRef = 585; // Hauteur fixe de l'écran
+            let currentToileWidth = 1400;
+
+            // 1. Déformation de l'écran de la salle
+            if (roomRatio === 2.39) {
+                currentToileWidth = 1400;
+            } else if (roomRatio === 1.90) {
+                currentToileWidth = 1111;
+            } else if (roomRatio === 1.85) {
+                currentToileWidth = 1082;
+            }
+
+            salleToile.style.width = `${currentToileWidth}px`;
+            salleToile.style.height = `${heightRef}px`;
+
+            // 2. Ajustement du conteneur easyDCP
+            if (dcpRatio <= roomRatio) {
+                const dcpWidth = heightRef * dcpRatio;
+                dcpContainer.style.width = `${dcpWidth}px`;
+                dcpContainer.style.height = `100%`;
+            } else {
+                dcpContainer.style.width = `100%`;
+                const targetHeight = currentToileWidth / dcpRatio;
+                dcpContainer.style.height = `${targetHeight}px`;
+            }
+        }
+
+        function setRoom(ratio, btn) {
+            roomRatio = ratio;
+            document.querySelectorAll('.btn-room').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updateRatios();
+        }
+
+        function setDCP(ratio, btn) {
+            dcpRatio = ratio;
+            document.querySelectorAll('.btn-dcp').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updateRatios();
+        }
+
+        videoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) videoPlayer.src = URL.createObjectURL(file);
+        });
+
+        window.addEventListener('resize', resizeSimulator);
+        resizeSimulator();
+        updateRatios();
+    </script>
+</body>
+</html>
