@@ -64,12 +64,10 @@
         }
         .btn-toggle:hover { border-color: #666; color: #fff; }
         
-        /* Couleurs des boutons */
         .btn-room.active { background: #27ae60; color: white; border-color: #2ecc71; }
         .btn-dcp.active { background: #2980b9; color: white; border-color: #3498db; }
         .btn-mask.active { background: #e67e22; color: white; border-color: #f39c12; }
 
-        /* --- LE CONTENEUR MAÎTRE (RÉSOLUTION FIXE VIRTUELLE) --- */
         .simulator-viewport {
             flex-grow: 1;
             display: flex;
@@ -95,11 +93,7 @@
         /* --- LA TOILE PHYSIQUE DE LA SALLE --- */
         .salle-physique-toile {
             position: absolute;
-            
-            /* --- ON A RE-MONTÉ L'ÉCRAN ICI --- */
-            /* Précédemment centré automatiquement, on le force maintenant plus haut (150px du haut au lieu de ~250px) */
             top: 150px; 
-            
             width: 1400px; 
             height: 585px; 
             background: #111; 
@@ -131,34 +125,23 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
+            z-index: 1;
         }
 
-        /* --- SYSTEME DE CACHES / MASQUES ROUGES TRANSPARENTS --- */
-        /* Ils se positionnent de manière absolue à l'intérieur du conteneur DCP */
+        /* --- SYSTÈME DE CACHES --- */
         .mask-overlay {
             position: absolute;
             top: 0;
             bottom: 0;
-            background: rgba(230, 9, 20, 0.25); /* Rouge à 25% d'opacité pour que ce soit bien visible */
-            border-right: 2px dashed #ff4d4d;
-            border-left: 2px dashed #ff4d4d;
-            pointer-events: none; /* Laisse passer les clics sur le lecteur */
-            display: none; /* Caché par défaut */
+            background: rgba(230, 9, 20, 0.25); 
+            pointer-events: none; 
+            display: none; 
             z-index: 15;
-        }
-
-        /* Quand le cache 1.33 est actif, on applique ces dimensions */
-        /* En hauteur 100%, le format 1.33 (4:3) doit occuper une largeur égale à sa Hauteur x 1.333 */
-        .dcp-container.has-mask-133 .mask-overlay {
-            display: block;
-            /* On calcule la zone restante sur les côtés extérieurs */
-            /* En gros, on prend tout ce qui dépasse des 1.33 centraux */
-            width: calc((100% - (100vh * 0.541 * 1.333)) / 2); 
+            transition: width 0.4s ease, left 0.4s ease, right 0.4s ease;
         }
         
-        .mask-left { left: 0; border-left: none; }
-        .mask-right { right: 0; border-right: none; }
-
+        .mask-left { left: 0; border-right: 2px dashed #ff4d4d; }
+        .mask-right { right: 0; border-left: 2px dashed #ff4d4d; }
 
         footer { background: #111; padding: 12px; text-align: center; font-size: 13px; z-index: 100; border-top: 1px solid #222; }
     </style>
@@ -167,8 +150,10 @@
 
     <header>
         <div class="control-row">
+            <!-- La liste des formats d'écrans avec ton nouveau bouton Ratio 1.78 intégré -->
             <div class="control-group">
                 <span class="label-group">🏢 Écran Salle :</span>
+                <button class="btn-toggle btn-room" onclick="setRoom(1.78, this)">Ratio 1.78</button>
                 <button class="btn-toggle btn-room" onclick="setRoom(1.85, this)">Salle 1.85 (Flat)</button>
                 <button class="btn-toggle btn-room" onclick="setRoom(1.90, this)">Salle 1.90 (Full)</button>
                 <button class="btn-toggle btn-room active" onclick="setRoom(2.39, this)">Salle 2.39 (Scope)</button>
@@ -184,9 +169,11 @@
 
         <div class="control-row" style="margin-top: 5px;">
             <div class="control-group">
-                <span class="label-group">🔍 Afficher Repère :</span>
-                <button class="btn-toggle btn-mask" onclick="toggleMask('1.33', this)">Cache Film 1.33 (4:3)</button>
-                <button class="btn-toggle btn-mask" onclick="toggleMask('none', this)">Désactiver les caches</button>
+                <span class="label-group">🔍 Afficher Cache :</span>
+                <button class="btn-toggle btn-mask" onclick="setActiveMask(1.33, this)">Format 1.33</button>
+                <button class="btn-toggle btn-mask" onclick="setActiveMask(1.66, this)">Format 1.66</button>
+                <button class="btn-toggle btn-mask" onclick="setActiveMask(1.85, this)">Format 1.85</button>
+                <button class="btn-toggle btn-mask active" onclick="setActiveMask(0, this)">Sans Cache</button>
             </div>
 
             <input type="file" id="videoInput" accept="video/mp4,video/mov,video/mkv" style="display:none">
@@ -211,7 +198,7 @@
     </div>
 
     <footer>
-        <p id="info">Système prêt. Écran rehaussé. Caches de vérification 1.33 disponibles.</p>
+        <p id="info">Système prêt. Bouton Ratio 1.78 configuré à $1041\text{ px}$ de base matricielle.</p>
     </footer>
 
     <script>
@@ -226,6 +213,7 @@
 
         let roomRatio = 2.39;
         let dcpRatio = 2.39;
+        let activeMaskRatio = 0; 
 
         function resizeSimulator() {
             const viewWidth = viewport.clientWidth;
@@ -242,62 +230,55 @@
             const heightRef = 585; 
             let currentToileWidth = 1400;
 
-            if (roomRatio === 2.39) {
-                currentToileWidth = 1400;
-            } else if (roomRatio === 1.90) {
-                currentToileWidth = 1111;
-            } else if (roomRatio === 1.85) {
-                currentToileWidth = 1082;
-            }
+            // Intégration mathématique du ratio 1.78 (585 * 1.7777 = 1041px)
+            if (roomRatio === 2.39) { currentToileWidth = 1400; } 
+            else if (roomRatio === 1.90) { currentToileWidth = 1111; } 
+            else if (roomRatio === 1.85) { currentToileWidth = 1082; }
+            else if (roomRatio === 1.78) { currentToileWidth = 1041; }
 
             salleToile.style.width = `${currentToileWidth}px`;
             salleToile.style.height = `${heightRef}px`;
 
+            let currentDCPWidth = currentToileWidth;
+            let currentDCPHeight = heightRef;
+
             if (dcpRatio <= roomRatio) {
-                const dcpWidth = heightRef * dcpRatio;
-                dcpContainer.style.width = `${dcpWidth}px`;
+                currentDCPWidth = heightRef * dcpRatio;
+                dcpContainer.style.width = `${currentDCPWidth}px`;
                 dcpContainer.style.height = `100%`;
+                currentDCPHeight = heightRef;
             } else {
                 dcpContainer.style.width = `100%`;
-                const targetHeight = currentToileWidth / dcpRatio;
-                dcpContainer.style.height = `${targetHeight}px`;
+                currentDCPHeight = currentToileWidth / dcpRatio;
+                dcpContainer.style.height = `${currentDCPHeight}px`;
+                currentDCPWidth = currentToileWidth;
             }
 
-            // Recalcul de la taille des caches rouges selon le container actuel
-            updateMaskSizes(heightRef);
-        }
+            // Calcul des caches dynamiques
+            if (activeMaskRatio > 0) {
+                const targetFilmWidth = currentDCPHeight * activeMaskRatio;
+                const sideWidth = (currentDCPWidth - targetFilmWidth) / 2;
 
-        function toggleMask(type, btn) {
-            document.querySelectorAll('.btn-mask').forEach(b => b.classList.remove('active'));
-            
-            if (type === '1.33') {
-                btn.classList.add('active');
-                dcpContainer.classList.add('has-mask-133');
-            } else {
-                dcpContainer.classList.remove('has-mask-133');
-            }
-            updateRatios();
-        }
-
-        function updateMaskSizes(heightRef) {
-            // Largeur réelle du conteneur DCP actuel en pixels
-            const currentDCPWidth = dcpContainer.clientWidth;
-            
-            // Largeur idéale que devrait faire un film 1.33 (Hauteur fixe de 585px * 1.333)
-            const target133Width = heightRef * 1.3333;
-            
-            // On calcule la taille de chaque bande rouge (ce qui reste sur les côtés)
-            const sideWidth = (currentDCPWidth - target133Width) / 2;
-            
-            if (sideWidth > 0 && dcpContainer.classList.contains('has-mask-133')) {
-                maskLeft.style.display = 'block';
-                maskRight.style.display = 'block';
-                maskLeft.style.width = `${sideWidth}px`;
-                maskRight.style.width = `${sideWidth}px`;
+                if (sideWidth > 0) {
+                    maskLeft.style.display = 'block';
+                    maskRight.style.display = 'block';
+                    maskLeft.style.width = `${sideWidth}px`;
+                    maskRight.style.width = `${sideWidth}px`;
+                } else {
+                    maskLeft.style.display = 'none';
+                    maskRight.style.display = 'none';
+                }
             } else {
                 maskLeft.style.display = 'none';
                 maskRight.style.display = 'none';
             }
+        }
+
+        function setActiveMask(ratio, btn) {
+            document.querySelectorAll('.btn-mask').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeMaskRatio = ratio;
+            updateRatios();
         }
 
         function setRoom(ratio, btn) {
