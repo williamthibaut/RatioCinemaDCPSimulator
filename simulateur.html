@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulateur easyDCP 2K - Salle de Cinéma</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #050505;
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background: rgba(17, 17, 17, 0.95);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            z-index: 100;
+            border-bottom: 2px solid #222;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-row {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            align-items: center;
+            width: 100%;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .label-group {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .btn-toggle {
+            padding: 6px 12px;
+            background: #222;
+            color: #ccc;
+            border: 1px solid #444;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .btn-toggle:hover { border-color: #666; color: #fff; }
+        
+        .btn-room.active { background: #27ae60; color: white; border-color: #2ecc71; }
+        .btn-dcp.active { background: #2980b9; color: white; border-color: #3498db; }
+        .btn-mask.active { background: #e67e22; color: white; border-color: #f39c12; }
+
+        /* --- STYLE DU BANDEAU DES MÉTADONNÉES VIDÉO --- */
+        .video-meta-banner {
+            background: rgba(0, 0, 0, 0.75);
+            border: 1px solid #333;
+            padding: 6px 15px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: monospace;
+            display: flex;
+            gap: 20px;
+            color: #00ff66; /* Vert monitoring */
+            margin-left: 15px;
+        }
+        .meta-val { color: #fff; font-weight: bold; }
+
+        .simulator-viewport {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: #000;
+        }
+
+        .cinema-wrapper {
+            position: relative;
+            width: 1920px;
+            height: 1080px;
+            background-image: url('12.jpg'); 
+            background-size: cover;
+            background-position: center;
+            transform-origin: center center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- LA TOILE PHYSIQUE DE LA SALLE --- */
+        .salle-physique-toile {
+            position: absolute;
+            top: 150px; 
+            width: 1400px; 
+            height: 585px; 
+            background: #000; /* Fond noir absolu */
+            border: 6px solid #1a1a1a;
+            box-shadow: 0 0 80px rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: width 0.4s ease, height 0.4s ease;
+            overflow: hidden;
+            z-index: 5;
+        }
+
+        /* --- LE CONTENEUR EASYDCP --- */
+        .dcp-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000; /* Gère l'affichage des bandes si le film est plus petit */
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            transition: width 0.4s ease, height 0.4s ease;
+        }
+
+        /* --- CORRECTION ICI : RESPECT DES RATIOS ET FOND TRANSPARENT --- */
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Respecte scrupuleusement le format de la vidéo uploadée */
+            background-color: transparent !important; /* Évite les doubles bandes noires pixelisées */
+            z-index: 1;
+        }
+
+        /* --- SYSTÈME DE CACHES --- */
+        .mask-overlay {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            background: rgba(230, 9, 20, 0.25); 
+            pointer-events: none; 
+            display: none; 
+            z-index: 15;
+            transition: width 0.4s ease, left 0.4s ease, right 0.4s ease;
+        }
+        
+        .mask-left { left: 0; border-right: 2px dashed #ff4d4d; }
+        .mask-right { right: 0; border-left: 2px dashed #ff4d4d; }
+
+        footer { background: #111; padding: 12px; text-align: center; font-size: 13px; z-index: 100; border-top: 1px solid #222; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="control-row">
+            <div class="control-group">
+                <span class="label-group">🏢 Écran Salle :</span>
+                <button class="btn-toggle btn-room" onclick="setRoom(1.78, this)">Ratio 1.78</button>
+                <button class="btn-toggle btn-room" onclick="setRoom(1.85, this)">Salle 1.85 (Flat)</button>
+                <button class="btn-toggle btn-room" onclick="setRoom(1.90, this)">Salle 1.90 (Full)</button>
+                <button class="btn-toggle btn-room active" onclick="setRoom(2.39, this)">Salle 2.39 (Scope)</button>
+            </div>
+
+            <div class="control-group">
+                <span class="label-group">💾 Ratio DCP Container 2K :</span>
+                <button class="btn-toggle btn-dcp" onclick="setDCP(1.78, this)">Classic Screen (1.78)</button>
+                <button class="btn-toggle btn-dcp" onclick="setDCP(1.85, this)">DCP Flat (1.85)</button>
+                <button class="btn-toggle btn-dcp" onclick="setDCP(1.90, this)">DCP Full (1.90)</button>
+                <button class="btn-toggle btn-dcp active" onclick="setDCP(2.39, this)">DCP Scope (2.39)</button>
+            </div>
+        </div>
+
+        <div class="control-row" style="margin-top: 5px;">
+            <div class="control-group">
+                <span class="label-group">🔍 Afficher Cache :</span>
+                <button class="btn-toggle btn-mask" onclick="setActiveMask(1.33, this)">Format 1.33</button>
+                <button class="btn-toggle btn-mask" onclick="setActiveMask(1.37, this)">Format 1.37</button>
+                <button class="btn-toggle btn-mask" onclick="setActiveMask(1.66, this)">Format 1.66</button>
+                <button class="btn-toggle btn-mask" onclick="setActiveMask(1.85, this)">Format 1.85</button>
+                <button class="btn-toggle btn-mask active" onclick="setActiveMask(0, this)">Sans Cache</button>
+        </div>
+
+            <input type="file" id="videoInput" accept="video/mp4,video/quicktime,video/x-matroska,.mov,.mkv" style="display:none">
+            <button class="btn-toggle" style="background:#e50914; color:white; border-color:#b80710; margin-left: 20px;" onclick="document.getElementById('videoInput').click()">📁 Charger Vidéo (MP4, MOV)</button>
+
+            <div class="video-meta-banner" id="metaBanner" style="display: none;">
+                <div>RES: <span class="meta-val" id="metaRes">-</span></div>
+                <div>RATIO: <span class="meta-val" id="metaRatio">-</span></div>
+                <div>FPS SOURCE: <span class="meta-val" id="metaFps">-</span></div>
+            </div>
+        </div>
+    </header>
+
+    <div class="simulator-viewport" id="viewport">
+        <div class="cinema-wrapper" id="cinemaWrapper">
+            
+            <div class="salle-physique-toile" id="salleToile">
+                <div class="dcp-container" id="dcpContainer">
+                    
+                    <div class="mask-overlay mask-left" id="maskLeft"></div>
+                    <div class="mask-overlay mask-right" id="maskRight"></div>
+                    
+                    <video id="videoPlayer" controls autoplay muted loop></video>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p id="info">Système prêt. Ratios du simulateur et calculs géométriques réalignés.</p>
+    </footer>
+
+    <script>
+        const wrapper = document.getElementById('cinemaWrapper');
+        const viewport = document.getElementById('viewport');
+        const salleToile = document.getElementById('salleToile');
+        const dcpContainer = document.getElementById('dcpContainer');
+        const videoInput = document.getElementById('videoInput');
+        const videoPlayer = document.getElementById('videoPlayer');
+        const maskLeft = document.getElementById('maskLeft');
+        const maskRight = document.getElementById('maskRight');
+
+        const metaBanner = document.getElementById('metaBanner');
+        const metaRes = document.getElementById('metaRes');
+        const metaRatio = document.getElementById('metaRatio');
+        const metaFps = document.getElementById('metaFps');
+
+        let roomRatio = 2.39;
+        let dcpRatio = 2.39;
+        let activeMaskRatio = 0; 
+
+        let frameCount = 0;
+        let fpsIntervalStartTime = 0;
+
+        function resizeSimulator() {
+            const viewWidth = viewport.clientWidth;
+            const viewHeight = viewport.clientHeight;
+            
+            const scaleX = viewWidth / 1920;
+            const scaleY = viewHeight / 1080;
+            const scale = Math.min(scaleX, scaleY);
+
+            wrapper.style.transform = `scale(${scale})`;
+        }
+
+        function updateRatios() {
+            const heightRef = 585; 
+            let currentToileWidth = 1400;
+
+            if (roomRatio === 2.39) { currentToileWidth = 1400; } 
+            else if (roomRatio === 1.90) { currentToileWidth = 1111; } 
+            else if (roomRatio === 1.85) { currentToileWidth = 1082; }
+            else if (roomRatio === 1.78) { currentToileWidth = 1042; } 
+
+            salleToile.style.width = `${currentToileWidth}px`;
+            salleToile.style.height = `${heightRef}px`;
+
+            let currentDCPWidth = currentToileWidth;
+            let currentDCPHeight = heightRef;
+
+            if (dcpRatio <= roomRatio) {
+                currentDCPWidth = heightRef * dcpRatio;
+                dcpContainer.style.width = `${currentDCPWidth}px`;
+                dcpContainer.style.height = `100%`;
+                currentDCPHeight = heightRef;
+            } else {
+                dcpContainer.style.width = `100%`;
+                currentDCPHeight = currentToileWidth / dcpRatio;
+                dcpContainer.style.height = `${currentDCPHeight}px`;
+                currentDCPWidth = currentToileWidth;
+            }
+
+            if (activeMaskRatio > 0) {
+                const targetFilmWidth = currentDCPHeight * activeMaskRatio;
+                const sideWidth = (currentDCPWidth - targetFilmWidth) / 2;
+
+                if (sideWidth > 0) {
+                    maskLeft.style.display = 'block';
+                    maskRight.style.display = 'block';
+                    maskLeft.style.width = `${sideWidth}px`;
+                    maskRight.style.width = `${sideWidth}px`;
+                } else {
+                    maskLeft.style.display = 'none';
+                    maskRight.style.display = 'none';
+                }
+            } else {
+                maskLeft.style.display = 'none';
+                maskRight.style.display = 'none';
+            }
+        }
+
+        videoPlayer.addEventListener('loadedmetadata', function() {
+            const w = videoPlayer.videoWidth;
+            const h = videoPlayer.videoHeight;
+            
+            const calculatedRatio = (w / h).toFixed(2);
+
+            metaRes.textContent = `${w}x${h}`;
+            metaRatio.textContent = `${calculatedRatio} (1:${calculatedRatio})`;
+            metaBanner.style.display = 'flex'; 
+            
+            frameCount = 0;
+            fpsIntervalStartTime = 0;
+            metaFps.textContent = "Calcul...";
+
+            if (videoPlayer.requestVideoFrameCallback) {
+                videoPlayer.requestVideoFrameCallback(monitorFps);
+            } else {
+                metaFps.textContent = "Non supporté";
+            }
+        });
+
+        function monitorFps(now, metadata) {
+            if (fpsIntervalStartTime === 0) {
+                fpsIntervalStartTime = now;
+            }
+            
+            frameCount++;
+            const elapsed = now - fpsIntervalStartTime;
+
+            if (elapsed >= 1000) {
+                const realFps = Math.round((frameCount * 1000) / elapsed);
+                metaFps.textContent = `${realFps} Img/s`;
+                
+                frameCount = 0;
+                fpsIntervalStartTime = now;
+            }
+
+            if (!videoPlayer.paused && !videoPlayer.ended) {
+                videoPlayer.requestVideoFrameCallback(monitorFps);
+            }
+        }
+
+        videoPlayer.addEventListener('play', function() {
+            if (videoPlayer.requestVideoFrameCallback) {
+                videoPlayer.requestVideoFrameCallback(monitorFps);
+            }
+        });
+
+        function setActiveMask(ratio, btn) {
+            document.querySelectorAll('.btn-mask').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeMaskRatio = ratio;
+            updateRatios();
+        }
+
+        function setRoom(ratio, btn) {
+            roomRatio = ratio;
+            document.querySelectorAll('.btn-room').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updateRatios();
+        }
+
+        function setDCP(ratio, btn) {
+            dcpRatio = ratio;
+            document.querySelectorAll('.btn-dcp').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updateRatios();
+        }
+
+        videoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) videoPlayer.src = URL.createObjectURL(file);
+        });
+
+        window.addEventListener('resize', () => {
+            resizeSimulator();
+            updateRatios();
+        });
+        
+        resizeSimulator();
+        updateRatios();
+    </script>
+</body>
+</html>
