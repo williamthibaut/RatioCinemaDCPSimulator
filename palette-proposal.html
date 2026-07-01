@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposition de Palette de Couleurs</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #0D1117;
+            color: #E5E7EB;
+            padding: 40px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        header {
+            background-color: #161B22;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #30363D;
+            margin-bottom: 30px;
+        }
+        h1, h2 {
+            color: #E5E7EB;
+            border-bottom: 1px solid #30363D;
+            padding-bottom: 10px;
+        }
+        h1 { font-size: 2.5em; }
+        h2 { font-size: 1.8em; margin-top: 40px; }
+        p {
+            line-height: 1.6;
+            font-size: 1.1em;
+        }
+        .label {
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #8B949E;
+            font-weight: bold;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #38BDF8;
+            color: #0D1117;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+        .button:hover {
+            background-color: #7DD3FC;
+        }
+        .palette-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .color-swatch {
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #30363D;
+            text-align: center;
+        }
+        .color-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            border: 2px solid #E5E7EB;
+        }
+        .color-code {
+            font-family: monospace;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Proposition d'Identité Visuelle</h1>
+            <p>Aperçu du thème sombre avec des accents de bleu pour une expérience utilisateur moderne et confortable.</p>
+        </header>
+
+        <h2>Éléments d'Interface</h2>
+        <p class="label">Ceci est un texte secondaire pour les labels.</p>
+        <p>Ceci est un paragraphe de texte standard. Il utilise une couleur blanc-cassé pour ne pas fatiguer les yeux sur un fond très sombre. Les liens et les actions principales attireront l'attention avec une <a href="#" class="button">couleur bleue vive</a>.</p>
+        <a href="#" class="button">Bouton Principal</a>
+
+        <h2>Palette de Couleurs</h2>
+        <div class="palette-grid">
+            <div class="color-swatch">
+                <div class="color-circle" style="background-color: #0D1117;"></div>
+                <div class="label">Fond Principal</div>
+                <div class="color-code">#0D1117</div>
+            </div>
+            <div class="color-swatch">
+                <div class="color-circle" style="background-color: #161B22;"></div>
+                <div class="label">Fond Secondaire</div>
+                <div class="color-code">#161B22</div>
+            </div>
+            <div class="color-swatch">
+                <div class="color-circle" style="background-color: #38BDF8;"></div>
+                <div class="label">Bleu Interactif</div>
+                <div class="color-code">#38BDF8</div>
+            </div>
+            <div class="color-swatch">
+                <div class="color-circle" style="background-color: #E5E7EB;"></div>
+                <div class="label">Texte Principal</div>
+                <div class="color-code">#E5E7EB</div>
+            </div>
+            <div class="color-swatch">
+                <div class="color-circle" style="background-color: #8B949E;"></div>
+                <div class="label">Texte Secondaire</div>
+                <div class="color-code">#8B949E</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

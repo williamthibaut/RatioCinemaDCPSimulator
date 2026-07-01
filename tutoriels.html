@@ -1,0 +1,52 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutoriels - RatioCinemaSim</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="nav-logo">RatioCinemaSim</a>
+        <div class="nav-links">
+            <a href="index.html">Accueil</a>
+            <a href="simulateur.html">Simulateur</a>
+            <a href="tutoriels.html" class="active">Tutoriels</a>
+            <a href="fichiers-attendus.html">Fichiers Attendus</a>
+        </div>
+    </nav>
+    <main class="main-content">
+        <h1>Comprendre le format AAF pour le Mixage</h1>
+        <p>
+            L'AAF (Advanced Authoring Format) est un format de fichier essentiel dans le monde de la post-production audio et vidéo. Il permet d'échanger des métadonnées de montage complexes entre différentes plateformes, notamment entre le logiciel de montage (comme Avid Media Composer) et la station de travail audio numérique (DAW) utilisée pour le mixage (comme Pro Tools).
+        </p>
+        <h2>Le Principe de l'AAF</h2>
+        <p>
+            Imaginez l'AAF comme une "recette" de votre montage. Il ne contient pas les médias (les fichiers audio et vidéo) eux-mêmes, mais plutôt une description détaillée de la manière dont ils sont organisés sur la timeline. Il indique quel fichier utiliser, à quel timecode commencer et finir, quel est le volume de chaque clip, quels fondus ont été appliqués, etc.
+        </p>
+        <h2>AAF "Link to" vs. "Embedded"</h2>
+        <p>
+            Lors de l'exportation d'un AAF depuis Avid, deux options principales se présentent :
+        </p>
+        <ul>
+            <li><strong>Link to (or "Consolidate"):</strong> C'est la méthode la plus professionnelle et la plus courante. L'AAF contient uniquement les métadonnées. À côté de ce fichier AAF, le monteur fournit un dossier contenant tous les fichiers audio nécessaires, consolidés et prêts à l'emploi. Lorsque l'ingénieur du son ouvre l'AAF dans Pro Tools, le logiciel lit les instructions et relie ("link") automatiquement chaque clip de la timeline au fichier audio correspondant dans le dossier des médias.</li>
+            <li><strong>Embedded:</strong> Cette méthode intègre directement les fichiers audio dans le fichier AAF. Cela crée un fichier unique, souvent très lourd. Bien que pratique pour de très petits projets, cette approche est généralement évitée dans les flux de travail professionnels car elle est moins flexible et peut entraîner des problèmes de performance et de gestion des médias.</li>
+        </ul>
+        <div class="notice-block">
+            <p><strong>Bonne pratique :</strong> Toujours demander un AAF "consolidé" (non-embedded) avec un dossier de médias séparé. Assurez-vous que le monteur inclut des "handles" (des poignées), c'est-à-dire quelques secondes d'audio supplémentaire avant le début et après la fin de chaque clip. Cela donne la flexibilité nécessaire au mixeur pour affiner les transitions sonores.</p>
+        </div>
+        <h2>Le Processus Typique</h2>
+        <ol>
+            <li><strong>Côté Monteur (Avid):</strong> Le monteur finalise son montage image et son. Il exporte un AAF en choisissant de consolider les médias audio avec des poignées (par exemple, 5 secondes).</li>
+            <li><strong>Transfert:</strong> Le monteur envoie à l'ingénieur du son le petit fichier AAF ainsi que le dossier "OMFI MediaFiles" (ou "Avid MediaFiles") qui contient tous les sons consolidés.</li>
+            <li><strong>Côté Ingénieur du Son (Pro Tools):</strong> L'ingénieur du son crée une nouvelle session Pro Tools. Il utilise la fonction "Import Session Data" (Fichier > Importer > Données de session) et sélectionne le fichier AAF.</li>
+            <li><strong>La Magie Opère:</strong> Pro Tools lit l'AAF, reconstruit la timeline du montage à l'identique, et relie tous les clips aux fichiers audio correspondants. La session de mixage est prête à commencer, avec toutes les pistes, les volumes et les fondus du monteur comme base de travail.</li>
+        </ol>
+    </main>
+    <footer>
+        <p>RatioCinemaSim © 2026 - Un projet de William Thibaut.</p>
+    </footer>
+</body>
+</html>

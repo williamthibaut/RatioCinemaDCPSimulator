@@ -1,159 +1,34 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post-Production Hub - Tutos & Outils</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
-            background-color: #0b0b0b;
-            color: #e0e0e0;
-            line-height: 1.7;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        header {
-            background-color: #1a1a1a;
-            padding: 15px 0;
-            border-bottom: 1px solid #333;
-            margin-bottom: 30px;
-        }
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        nav .logo {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #fff;
-            text-decoration: none;
-        }
-        nav ul {
-            list-style: none;
-            display: flex;
-            gap: 20px;
-        }
-        nav ul li a {
-            color: #ccc;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        nav ul li a:hover, nav ul li a.active {
-            color: #fff;
-            background-color: #e50914;
-        }
-        article {
-            background: #141414;
-            border: 1px solid #222;
-            border-radius: 8px;
-            padding: 30px 40px;
-        }
-        article h1 {
-            color: #fff;
-            font-size: 2.2em;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #e50914;
-            padding-bottom: 10px;
-        }
-        article h2 {
-            color: #eee;
-            font-size: 1.6em;
-            margin-top: 30px;
-            margin-bottom: 15px;
-        }
-        article p {
-            margin-bottom: 15px;
-            font-size: 1.1em;
-        }
-        article code {
-            background-color: #282c34;
-            color: #e06c75;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        article .important {
-            background-color: rgba(229, 9, 20, 0.1);
-            border-left: 4px solid #e50914;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-        footer {
-            text-align: center;
-            padding: 40px 20px;
-            margin-top: 30px;
-            font-size: 0.9em;
-            color: #666;
-            border-top: 1px solid #222;
-        }
-    </style>
+    <title>Accueil - RatioCinemaSim</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <header>
-        <nav>
-            <a href="index.html" class="logo">Post-Prod Hub</a>
-            <ul>
-                <li><a href="index.html" class="active">Tutoriels</a></li>
-                <li><a href="simulateur.html">Simulateur DCP</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <div class="container">
-        <article>
-            <h1>Comprendre le format AAF pour le Mixage</h1>
-            <p class="intro">
-                L'AAF (Advanced Authoring Format) est un format de fichier essentiel dans le monde de la post-production audio et vidéo. Il permet d'échanger des métadonnées de montage complexes entre différentes plateformes, notamment entre le logiciel de montage (comme Avid Media Composer) et la station de travail audio numérique (DAW) utilisée pour le mixage (comme Pro Tools).
-            </p>
-
-            <h2>Le Principe de l'AAF</h2>
-            <p>
-                Imaginez l'AAF comme une "recette" de votre montage. Il ne contient pas les médias (les fichiers audio et vidéo) eux-mêmes, mais plutôt une description détaillée de la manière dont ils sont organisés sur la timeline. Il indique quel fichier utiliser, à quel timecode commencer et finir, quel est le volume de chaque clip, quels fondus ont été appliqués, etc.
-            </p>
-
-            <h2>AAF "Link to" vs. "Embedded"</h2>
-            <p>
-                Lors de l'exportation d'un AAF depuis Avid, deux options principales se présentent :
-            </p>
-            <ul>
-                <li><strong>Link to (or "Consolidate"):</strong> C'est la méthode la plus professionnelle et la plus courante. L'AAF contient uniquement les métadonnées. À côté de ce fichier AAF, le monteur fournit un dossier contenant tous les fichiers audio nécessaires, consolidés et prêts à l'emploi. Lorsque l'ingénieur du son ouvre l'AAF dans Pro Tools, le logiciel lit les instructions et relie ("link") automatiquement chaque clip de la timeline au fichier audio correspondant dans le dossier des médias.</li>
-                <li><strong>Embedded:</strong> Cette méthode intègre directement les fichiers audio dans le fichier AAF. Cela crée un fichier unique, souvent très lourd. Bien que pratique pour de très petits projets, cette approche est généralement évitée dans les flux de travail professionnels car elle est moins flexible et peut entraîner des problèmes de performance et de gestion des médias.</li>
-            </ul>
-
-            <div class="important">
-                <p><strong>Bonne pratique :</strong> Toujours demander un AAF "consolidé" (non-embedded) avec un dossier de médias séparé. Assurez-vous que le monteur inclut des "handles" (des poignées), c'est-à-dire quelques secondes d'audio supplémentaire avant le début et après la fin de chaque clip. Cela donne la flexibilité nécessaire au mixeur pour affiner les transitions sonores.</p>
-            </div>
-
-            <h2>Le Processus Typique</h2>
-            <ol>
-                <li><strong>Côté Monteur (Avid):</strong> Le monteur finalise son montage image et son. Il exporte un AAF en choisissant de consolider les médias audio avec des poignées (par exemple, 5 secondes).</li>
-                <li><strong>Transfert:</strong> Le monteur envoie à l'ingénieur du son le petit fichier AAF ainsi que le dossier "OMFI MediaFiles" (ou "Avid MediaFiles") qui contient tous les sons consolidés.</li>
-                <li><strong>Côté Ingénieur du Son (Pro Tools):</strong> L'ingénieur du son crée une nouvelle session Pro Tools. Il utilise la fonction "Import Session Data" (Fichier > Importer > Données de session) et sélectionne le fichier AAF.</li>
-                <li><strong>La Magie Opère:</strong> Pro Tools lit l'AAF, reconstruit la timeline du montage à l'identique, et relie tous les clips aux fichiers audio correspondants. La session de mixage est prête à commencer, avec toutes les pistes, les volumes et les fondus du monteur comme base de travail.</li>
-            </ol>
-        </article>
-    </div>
-
+    <nav class="navbar">
+        <a href="index.html" class="nav-logo">RatioCinemaSim</a>
+        <div class="nav-links">
+            <a href="index.html" class="active">Accueil</a>
+            <a href="simulateur.html">Simulateur</a>
+            <a href="tutoriels.html">Tutoriels</a>
+            <a href="fichiers-attendus.html">Fichiers Attendus</a>
+        </div>
+    </nav>
+    <main class="main-content">
+        <h1>Bienvenue sur RatioCinemaSim</h1>
+        <p>Ce site est une collection d'outils et de ressources pour la post-production cinématographique, conçu pour aider les monteurs et les techniciens à visualiser et à se conformer aux standards de l'industrie.</p>
+        <p>Explorez les différentes sections pour en savoir plus :</p>
+        <ul>
+            <li><strong><a href="simulateur.html">Simulateur DCP</a>:</strong> Visualisez l'impact des différents ratios d'aspect (Scope, Flat) et des masques de projection sur vos images.</li>
+            <li><strong><a href="tutoriels.html">Tutoriels</a>:</strong> Apprenez les bases des formats de livraison comme l'AAF et les spécifications des DCP.</li>
+            <li><strong><a href="fichiers-attendus.html">Fichiers Attendus</a>:</strong> Trouvez les spécifications exactes pour les fichiers à livrer en fin de production.</li>
+        </ul>
+    </main>
     <footer>
-        <p>&copy; 2026 RatioCinemaDCPSimulator - Un projet de William Thibaut.</p>
+        <p>RatioCinemaSim © 2026 - Un projet de William Thibaut.</p>
     </footer>
-
 </body>
 </html>
