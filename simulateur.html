@@ -66,7 +66,7 @@
         
         .btn-room.active { background: #27ae60; color: white; border-color: #2ecc71; }
         .btn-dcp.active { background: #2980b9; color: white; border-color: #3498db; }
-        .btn-mask.active { background: #e67e22; color: white; border-color: #f39c12; }
+        .btn-mask.active { background: #2980b9; color: white; border-color: #3498db; }
 
         /* --- STYLE DU BANDEAU DES MÉTADONNÉES VIDÉO --- */
         .video-meta-banner {
@@ -150,15 +150,15 @@
             position: absolute;
             top: 0;
             bottom: 0;
-            background: rgba(230, 9, 20, 0.25); 
+            background: rgba(52, 152, 219, 0.25); 
             pointer-events: none; 
             display: none; 
             z-index: 15;
             transition: width 0.4s ease, left 0.4s ease, right 0.4s ease;
         }
         
-        .mask-left { left: 0; border-right: 2px dashed #ff4d4d; }
-        .mask-right { right: 0; border-left: 2px dashed #ff4d4d; }
+        .mask-left { left: 0; border-right: 2px dashed #3498db; }
+                .mask-right { right: 0; border-left: 2px dashed #3498db; }
 
         footer { background: #111; padding: 12px; text-align: center; font-size: 13px; z-index: 100; border-top: 1px solid #222; }
     </style>
@@ -194,8 +194,9 @@
                 <button class="btn-toggle btn-mask active" onclick="setActiveMask(0, this)">Sans Cache</button>
         </div>
 
+            <a href="index.html" class="btn-toggle" style="text-decoration: none; background: #2980b9; color: white; border-color: #3498db; margin-left: 20px;">🏠 Accueil</a>
             <input type="file" id="videoInput" accept="video/mp4,video/quicktime,video/x-matroska,.mov,.mkv" style="display:none">
-            <button class="btn-toggle" style="background:#e50914; color:white; border-color:#b80710; margin-left: 20px;" onclick="document.getElementById('videoInput').click()">📁 Charger Vidéo (MP4, MOV)</button>
+            <button class="btn-toggle" style="background:#000000; color:white; border-color:#333; margin-left: 20px;" onclick="document.getElementById('videoInput').click()">📁 Charger Vidéo (MP4, MOV)</button>
 
             <div class="video-meta-banner" id="metaBanner" style="display: none;">
                 <div>RES: <span class="meta-val" id="metaRes">-</span></div>
