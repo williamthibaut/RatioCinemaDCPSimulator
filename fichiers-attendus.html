@@ -3,57 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fichiers Attendus - RatioCinemaSim</title>
+    <title data-key="page_title">Fichiers Attendus - RatioCinemaSim</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <nav class="navbar">
-        <a href="index.html" class="nav-logo">RatioCinemaSim</a>
+        <div class="nav-left">
+            <a href="index.html" class="nav-logo">RatioCinemaSim</a>
+            <div class="language-switcher">
+                <select id="language-selector">
+                    <option value="fr">Français</option>
+                    <option value="en">English</option>
+                    <option value="zh">中文</option>
+                    <option value="pt-br">Português (Brasil)</option>
+                    <option value="ja">日本語</option>
+                    <option value="ar-tn">العربية (تونس)</option>
+                    <option value="ar-ma">العربية (المغرب)</option>
+                    <option value="pt">Português</option>
+                </select>
+            </div>
+        </div>
         <div class="nav-links">
-            <a href="index.html">Accueil</a>
-            <a href="simulateur.html">Simulateur</a>
-            <a href="tutoriels.html">Tutoriels</a>
-            <a href="fichiers-attendus.html" class="active">Fichiers Attendus</a>
+            <a href="index.html" data-key="nav_home">Accueil</a>
+            <a href="simulateur.html" data-key="nav_simulator">Simulateur</a>
+            <a href="tutoriels.html" data-key="nav_tutorials">Tutoriels</a>
+            <a href="fichiers-attendus.html" class="active" data-key="nav_files">Fichiers Attendus</a>
         </div>
     </nav>
     <main class="main-content">
-        <h1>Fichiers Attendus en Fin de Production</h1>
-        <p>En fonction de la langue de votre film, les exports attendus seront différents :</p>
+        <h1 data-key="main_title">Fichiers Attendus en Fin de Production</h1>
+        <p data-key="main_desc">En fonction de la langue de votre film, les exports attendus seront différents :</p>
         <div class="language-section">
-            <h2>Film en Français</h2>
-            <p>Si le film est en <strong>FRANÇAIS</strong>, voici les fichiers attendus :</p>
+            <h2 data-key="fr_film_title">Film en Français</h2>
+            <p data-key="fr_film_spec">Si le film est en <strong>FRANÇAIS</strong>, voici les fichiers attendus :</p>
             <ul>
-                <li>1 master ProRes 422HQ (Rec.709, Gamma 2.4) sans sous-titres.</li>
-                <li>1 master avec sous-titres anglais incrustés (VOSTENG).</li>
-                <li>1 fichier de sous-titres format .SRT en anglais.</li>
-                <li>1 master sans sous-titres (Version Originale).</li>
+                <li data-key="fr_film_item1">1 master ProRes 422HQ (Rec.709, Gamma 2.4) sans sous-titres.</li>
+                <li data-key="fr_film_item2">1 master avec sous-titres anglais incrustés (VOSTENG).</li>
+                <li data-key="fr_film_item3">1 fichier de sous-titres format .SRT en anglais.</li>
+                <li data-key="fr_film_item4">1 master sans sous-titres (Version Originale).</li>
             </ul>
         </div>
         <div class="language-section">
-            <h2>Film en Anglais</h2>
-            <p>Si le film est en <strong>ANGLAIS</strong>, voici les fichiers attendus :</p>
+            <h2 data-key="en_film_title">Film en Anglais</h2>
+            <p data-key="en_film_spec">Si le film est en <strong>ANGLAIS</strong>, voici les fichiers attendus :</p>
             <ul>
-                <li>1 master avec sous-titres français incrustés (VOSTFR).</li>
-                <li>1 master avec sous-titres anglais incrustés (VOSTENG).
-                <li>1 master sans sous-titres (Version Originale).</li>
-                <li>1 fichier de sous-titres format .SRT en français.</li>
-                <li>1 fichier de sous-titres format .SRT en anglais.</li>
+                <li data-key="en_film_item1">1 master avec sous-titres français incrustés (VOSTFR).</li>
+                <li data-key="en_film_item2">1 master avec sous-titres anglais incrustés (VOSTENG).</li>
+                <li data-key="en_film_item3">1 master sans sous-titres (Version Originale).</li>
+                <li data-key="en_film_item4">1 fichier de sous-titres format .SRT en français.</li>
+                <li data-key="en_film_item5">1 fichier de sous-titres format .SRT en anglais.</li>
             </ul>
         </div>
         <div class="language-section">
-            <h2>Film dans une Autre Langue</h2>
-            <p>Si le film est dans une <strong>autre langue</strong> (ni français, ni anglais), voici les fichiers attendus :</p>
+            <h2 data-key="other_film_title">Film dans une Autre Langue</h2>
+            <p data-key="other_film_spec">Si le film est dans une <strong>autre langue</strong> (ni français, ni anglais), voici les fichiers attendus :</p>
             <ul>
-                <li>1 master sans sous-titres (Version Originale).</li>
-                <li>1 master avec sous-titres français incrustés (VOSTFR).</li>
-                <li>1 master avec sous-titres anglais incrustés (VOSTENG).</li>
-                <li>1 fichier de sous-titres format .SRT en français.</li>
-                <li>1 fichier de sous-titres format .SRT en anglais.</li>
+                <li data-key="other_film_item1">1 master sans sous-titres (Version Originale).</li>
+                <li data-key="other_film_item2">1 master avec sous-titres français incrustés (VOSTFR).</li>
+                <li data-key="other_film_item3">1 master avec sous-titres anglais incrustés (VOSTENG).</li>
+                <li data-key="other_film_item4">1 fichier de sous-titres format .SRT en français.</li>
+                <li data-key="other_film_item5">1 fichier de sous-titres format .SRT en anglais.</li>
             </ul>
         </div>
     </main>
     <footer>
         <p>RatioCinemaSim © 2026</p>
     </footer>
+    <script src="translator.js"></script>
 </body>
 </html>
